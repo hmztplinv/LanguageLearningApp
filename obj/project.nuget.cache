@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "Ech2Law17vo=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\hmztp\\Desktop\\LanguageLearningApp.Api\\LanguageLearningApp.Api.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\hmztp\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.1\\microsoft.aspnetcore.openapi.9.0.1.nupkg.sha512",
+    "C:\\Users\\hmztp\\.nuget\\packages\\microsoft.openapi\\1.6.17\\microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}
