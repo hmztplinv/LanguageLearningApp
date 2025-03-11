@@ -1,0 +1,15 @@
+# Build Folders
+**/bin/
+**/obj/
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# User-Specific Files
+*.user
+*.suo
+*.userprefs
+
+# Others
+.DS_Store
