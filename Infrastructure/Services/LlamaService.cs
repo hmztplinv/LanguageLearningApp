@@ -8,38 +8,48 @@ namespace LanguageLearningApp.Api.Infrastructure.Services
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<LlamaService> _logger;
 
-        public LlamaService(HttpClient httpClient, IConfiguration configuration)
+        public LlamaService(HttpClient httpClient, IConfiguration configuration,ILogger<LlamaService> logger)
         {
             _httpClient = httpClient;
             _configuration = configuration;
+            _logger = logger;
         }
 
         public async Task<string> GetChatResponseAsync(string prompt, List<string> conversationHistory)
         {
-            // Ollama API için istek payload'ını oluşturuyoruz.
+            _logger.LogInformation("Sending prompt to Ollama: {Prompt}", prompt);
+            // Ollama API'ye gönderilecek payload
             var requestPayload = new
             {
-                model = "llama2:13b-chat",
-                prompt = prompt,
-                context = conversationHistory
+                model = "llama2-13b-chat",
+                prompt,
+                conversationHistory // Ollama bu alanı kullanıyorsa ekliyoruz
             };
 
-            // appsettings.json içerisindeki base URL'i alıyoruz.
-            var baseUrl = _configuration.GetValue<string>("Ollama:BaseUrl") ?? "http://localhost:11434";
-            var endpoint = $"{baseUrl}/api/generate"; // API endpoint'i; gerekirse uyarlayın.
+            // appsettings.json veya Environment variable'dan "BaseUrl" alındığını varsayıyoruz
+            var endpoint = $"{_configuration["BaseUrl"]}/api/generate";
 
+            // Ollama servisine POST isteği
             var response = await _httpClient.PostAsJsonAsync(endpoint, requestPayload);
+
+            _logger.LogInformation("Ollama responded with status code: {StatusCode}", response.StatusCode);
             if (response.IsSuccessStatusCode)
             {
-                // Örneğin, dönen JSON {"response": "Cevap metni"} şeklinde olsun.
-                var responseData = await response.Content.ReadFromJsonAsync<OllamaResponse>();
-                return responseData?.Response ?? "No response";
+                // Ollama'nın döndürdüğü JSON'u GenerateResponse modeline parse ediyoruz
+                var data = await response.Content.ReadFromJsonAsync<OllamaResponse>();
+                 _logger.LogInformation("Ollama content: {Content}", data?.Content);
+
+                // "content" alanını döndürüyoruz; yoksa bir uyarı
+                return data?.Content ?? "No 'content' field found in Ollama response.";
             }
             else
             {
-                // Hata durumunu uygun şekilde ele alın.
-                return "Error in Llama integration";
+                // Hata durumunda gelen içeriği veya reason phrase'i döndürebilirsin
+                var error = await response.Content.ReadAsStringAsync();
+                _logger.LogError("Ollama error response: {Error}", error);
+                return $"Error calling Ollama: {error}";
             }
         }
     }
@@ -47,6 +57,11 @@ namespace LanguageLearningApp.Api.Infrastructure.Services
     // Yanıtı temsil eden DTO
     public class OllamaResponse
     {
-        public string Response { get; set; }
+        public int Code { get; set; }
+        public string Model { get; set; }
+        public string Prompt { get; set; }
+        public string Content { get; set; } // Ollama cevabı genellikle "content" alanında döner
+        public object State { get; set; }
+        public List<object> Tokens { get; set; }
     }
 }
