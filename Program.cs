@@ -1,6 +1,8 @@
 using System.Text;
+using LanguageLearningApp.Api.Application.Interfaces;
 using LanguageLearningApp.Api.Application.Settings;
 using LanguageLearningApp.Api.Infrastructure.Data;
+using LanguageLearningApp.Api.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -78,6 +80,8 @@ try
         };
     });
     
+    builder.Services.AddHttpClient<ILlamaService, LlamaService>();
+
     builder.Services.AddControllers();
     
     // Swagger ayarları
